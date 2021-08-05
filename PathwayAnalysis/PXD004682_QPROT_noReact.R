@@ -21,10 +21,6 @@ setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/PathwayAnalysis')
 fileIn <- "QPROT_test"
 fileOut <- "QPROT_testOut"
 
-print(paste("Processing file: ", fileIn, sep = ""))
-print(Sys.time())
-flush.console()
-
 # Reads in file and removes top 2 lines
 qprot_out <- read.table(fileIn, header = TRUE, sep = "\t")
 
@@ -51,9 +47,14 @@ headers <- c("Threshold", "Go_BP", "Go_MF", "Go_CC",
              "Kegg_Path", "Total", 'DEs')
 colnames(thresholdResults) <- headers
 
+print(paste("Processing file: ", fileIn, sep = ""))
+print(Sys.time())
+flush.console()
+
 ## Perform enrichment analysis for specified pValue cutoffs
 for(c in cutOffs) {
   fdrThresh <- c
+  #fdrThresh <- 0.05
   print(paste("Processing threshold: ", c, sep = ""))
   flush.console()
   
@@ -74,26 +75,48 @@ for(c in cutOffs) {
     print("Performing GO analysis....")
     flush.console()
     # Get functional annotation chart as R object and save to file
-    GOresult <- enrichGO(gene = DE_prots, 
+    GO_BPresult <- enrichGO(gene = DE_prots, 
                          OrgDb = 'org.Hs.eg.db', 
                          keyType = 'UNIPROT', 
-                         ont = 'ALL', 
+                         ont = 'BP', 
                          universe = BG_prots, 
                          pvalueCutoff = 0.05,
                          pAdjustMethod = 'BH')
+    GO_BPsimply <- simplify(GO_BPresult,
+                         cutoff = 0.7,
+                         by = "p.adjust",
+                         select_fun = min)
+    GOBPnum <- nrow(GO_BPsimply) 
+
+    GO_MFresult <- enrichGO(gene = DE_prots, 
+                            OrgDb = 'org.Hs.eg.db', 
+                            keyType = 'UNIPROT', 
+                            ont = 'MF', 
+                            universe = BG_prots, 
+                            pvalueCutoff = 0.05,
+                            pAdjustMethod = 'BH')
+    GO_MFsimply <- simplify(GO_MFresult,
+                            cutoff = 0.7,
+                            by = "p.adjust",
+                            select_fun = min)
+    GOMFnum <- nrow(GO_MFsimply)
+
+    GO_CCresult <- enrichGO(gene = DE_prots, 
+                            OrgDb = 'org.Hs.eg.db', 
+                            keyType = 'UNIPROT', 
+                            ont = 'CC', 
+                            universe = BG_prots, 
+                            pvalueCutoff = 0.05,
+                            pAdjustMethod = 'BH')
+    GO_CCsimply <- simplify(GO_CCresult,
+                            cutoff = 0.7,
+                            by = "p.adjust",
+                            select_fun = min)
+    GOCCnum <- nrow(GO_CCsimply)
     
-    totGO <- nrow(GOresult)
+    totGO <- GOBPnum + GOMFnum + GOCCnum
     print(paste("Number of GO terms: ", totGO, sep = ""))
     flush.console()
-    
-    goBP <- subset(GOresult, GOresult$ONTOLOGY == 'BP')
-    goBPNum <- nrow(goBP)
-    
-    goMF <- subset(GOresult, GOresult$ONTOLOGY =="MF")
-    goMFNum <- nrow(goMF)
-    
-    goCC <- subset(GOresult, GOresult$ONTOLOGY == "CC")
-    goCCNum <- nrow(goCC)
     
     print("Performing KEGG analysis")
     flush.console()
@@ -103,17 +126,15 @@ for(c in cutOffs) {
                              universe = BG_prots,
                              pvalueCutoff = 0.05,
                              pAdjustMethod = 'BH')
-    
     keggNum <- nrow(KEGGresult)
-    
     print(paste("PNumber of KEGG terms: ", keggNum, sep = ""))
     flush.console()
     
     totNum <- totGO + keggNum
     
     ## Summary of results
-    results <- data.frame(Threshold = fdrThresh, Go_BP = goBPNum, Go_MF = goMFNum, 
-                          Go_CC = goCCNum,  Kegg_Path = keggNum, Total = totNum, DEs = DE)
+    results <- data.frame(Threshold = fdrThresh, Go_BP = GOBPnum, Go_MF = GOMFnum, 
+                          Go_CC = GOCCnum,  Kegg_Path = keggNum, Total = totNum, DEs = DE)
     
     ## Add to table of results
     thresholdResults <- rbind(thresholdResults, results)
