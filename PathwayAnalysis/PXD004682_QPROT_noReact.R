@@ -1,6 +1,6 @@
 
 library(clusterProfiler)
-#library(ReactomePA)
+library(ReactomePA)
 library(data.table)
 library(stringr)
 library(tidyr)
@@ -36,15 +36,16 @@ cutOffs <- c(0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009,
 qprot_out <- qprot_out[order(qprot_out$fdr), ]
 
 ## Seperate the protein name so the Unipropt accesion can be used
-protAcc <- qprot_out %>% separate(Protein, c("SP", "Uniprot_Acc", ".."), sep = "\\|")
+protAcc <- qprot_out %>% separate(Protein, c("SP", "Uniprot_Acc", "Entrez"), sep = "\\|")
 
 ## List of background proteins for enrichment analysis
 BG_prots <- protAcc$Uniprot_Acc
+BG_react <- select(org.Hs.eg.db, BG_prots, "ENTREZID", "UNIPROT")
 
 ## create dataframe to store number of significant terms for each threshold
-thresholdResults <- data.frame(matrix(ncol = 7, nrow = 0))
+thresholdResults <- data.frame(matrix(ncol = 8, nrow = 0))
 headers <- c("Threshold", "Go_BP", "Go_MF", "Go_CC",
-             "Kegg_Path", "Total", 'DEs')
+             "Kegg_Path", "React_Path", "Total", 'DEs')
 colnames(thresholdResults) <- headers
 
 print(paste("Processing file: ", fileIn, sep = ""))
@@ -63,6 +64,7 @@ for(c in cutOffs) {
   
   # Create list of DE proteins and all proteins
   DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$fdr < fdrThresh))
+  DE_protsReact <- select(org.Hs.eg.db, DE_prots, "ENTREZID", "UNIPROT")
   DE <- length(DE_prots)
   NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$fdr >= fdrThresh))
   nonDE <- length(NonDE_prots)
@@ -126,22 +128,33 @@ for(c in cutOffs) {
                              universe = BG_prots,
                              pvalueCutoff = 0.05,
                              pAdjustMethod = 'BH')
-    keggNum <- nrow(KEGGresult)
-    print(paste("PNumber of KEGG terms: ", keggNum, sep = ""))
+    KEGGnum <- nrow(KEGGresult)
+    print(paste("Number of KEGG terms: ", KEGGnum , sep = ""))
     flush.console()
     
-    totNum <- totGO + keggNum
+    print("Performing REACT analysis")
+    flush.console()
+    REACTresult <- enrichPathway(gene = DE_protsReact$ENTREZID,
+                                 organism = "human",
+                                 pvalueCutoff = 0.05,
+                                 pAdjustMethod = "BH",
+                                 universe = BG_react$ENTREZID)
+    REACTnum <- nrow(REACTresult)
+    print(paste("Number of REACT terms: ", REACTnum , sep = ""))
+    flush.console()
+    
+    totNum <- totGO + KEGGnum + REACTnum
     
     ## Summary of results
     results <- data.frame(Threshold = fdrThresh, Go_BP = GOBPnum, Go_MF = GOMFnum, 
-                          Go_CC = GOCCnum,  Kegg_Path = keggNum, Total = totNum, DEs = DE)
+                          Go_CC = GOCCnum,  Kegg_Path = KEGGnum , React_Path = REACTnum, Total = totNum, DEs = DE)
     
     ## Add to table of results
     thresholdResults <- rbind(thresholdResults, results)
     
   } else {
     results <- data.frame(Threshold = pThresh, Number_Proteins = DEnum, Go_BP = 0, Go_MF = 0, 
-                          Go_CC = 0, Kegg_Path = 0, Total = 0, DEs = DE)
+                          Go_CC = 0, Kegg_Path = 0, React_Path = 0, Total = 0, DEs = DE)
     thresholdResults <- rbind(thresholdResults, results)
   }
 }
