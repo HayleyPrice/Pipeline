@@ -1,0 +1,54 @@
+
+R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> 
+> 
+> setwd("C:/Users/Hayley/OneDrive/PhD/Project/Al/QPROTclone/Comparisons/ProgenesisNormalised/Iterations/Results")
+> 
+> proteins = 250
+> split <- 5
+> subs <- proteins/split
+> 
+> fileIn <- paste('PXD001385_', proteins, 'prots', sep = "")
+> #fileIn <- "PXD001385_full"
+> qlone_input <- read.table(fileIn, sep = "\t", header = TRUE)
+> qlone_input <- qlone_input[, 1:7]
+> 
+> #Replaces zero values
+> qlone_input[qlone_input == 0] <- 0.01
+> #Logs the intensities
+> qlone_input[,2:7] <- log(qlone_input[2:7])
+> 
+> for (i in 1:split) {
++    
++   firstLine <- (subs * (i-1)) + 1
++   lastLine <- subs * i
++   dataSub <- qlone_input[firstLine:lastLine,]
++   loop <- i
++   outFile <- paste("subset", loop, ".csv", sep = "")
++   write.csv(dataSub, outFile)
++   
++ }
+> 
+> 
+> proc.time()
+   user  system elapsed 
+   0.78    0.07    0.87 

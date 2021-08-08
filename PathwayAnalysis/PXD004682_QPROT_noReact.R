@@ -43,9 +43,9 @@ BG_prots <- protAcc$Uniprot_Acc
 BG_react <- select(org.Hs.eg.db, BG_prots, "ENTREZID", "UNIPROT")
 
 ## create dataframe to store number of significant terms for each threshold
-thresholdResults <- data.frame(matrix(ncol = 8, nrow = 0))
+thresholdResults <- data.frame(matrix(ncol = 7, nrow = 0))
 headers <- c("Threshold", "Go_BP", "Go_MF", "Go_CC",
-             "Kegg_Path", "React_Path", "Total", 'DEs')
+             "Kegg_Path", "Total", 'DEs')
 colnames(thresholdResults) <- headers
 
 print(paste("Processing file: ", fileIn, sep = ""))
@@ -64,7 +64,6 @@ for(c in cutOffs) {
   
   # Create list of DE proteins and all proteins
   DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$fdr < fdrThresh))
-  DE_protsReact <- select(org.Hs.eg.db, DE_prots, "ENTREZID", "UNIPROT")
   DE <- length(DE_prots)
   NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$fdr >= fdrThresh))
   nonDE <- length(NonDE_prots)
@@ -132,29 +131,18 @@ for(c in cutOffs) {
     print(paste("Number of KEGG terms: ", KEGGnum , sep = ""))
     flush.console()
     
-    print("Performing REACT analysis")
-    flush.console()
-    REACTresult <- enrichPathway(gene = DE_protsReact$ENTREZID,
-                                 organism = "human",
-                                 pvalueCutoff = 0.05,
-                                 pAdjustMethod = "BH",
-                                 universe = BG_react$ENTREZID)
-    REACTnum <- nrow(REACTresult)
-    print(paste("Number of REACT terms: ", REACTnum , sep = ""))
-    flush.console()
-    
-    totNum <- totGO + KEGGnum + REACTnum
+    totNum <- totGO + KEGGnum
     
     ## Summary of results
     results <- data.frame(Threshold = fdrThresh, Go_BP = GOBPnum, Go_MF = GOMFnum, 
-                          Go_CC = GOCCnum,  Kegg_Path = KEGGnum , React_Path = REACTnum, Total = totNum, DEs = DE)
+                          Go_CC = GOCCnum,  Kegg_Path = KEGGnum , Total = totNum, DEs = DE)
     
     ## Add to table of results
     thresholdResults <- rbind(thresholdResults, results)
     
   } else {
     results <- data.frame(Threshold = pThresh, Number_Proteins = DEnum, Go_BP = 0, Go_MF = 0, 
-                          Go_CC = 0, Kegg_Path = 0, React_Path = 0, Total = 0, DEs = DE)
+                          Go_CC = 0, Kegg_Path = 0, Total = 0, DEs = DE)
     thresholdResults <- rbind(thresholdResults, results)
   }
 }
