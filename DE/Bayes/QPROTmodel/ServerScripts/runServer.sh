@@ -1,16 +1,14 @@
 # sets directory
 #cd Z:/hprice/Rbatch
 # runs R script to separate data into subsets
-Rscript Ql_dataSplit_Server.R PXD001385_P_PeptideIon_HiN_NG_23.09.16_sum_sumCharge_QL_0 PXD001385 0 2
-#
-#Rscript subServer.R subset1 PXD001385 0 
-#
-cd PXD001385\0\subsets
+Rscript QPROTmodel_dataSplit_Server.R PXD004682_QPROTin_test PXD004682 32
+
+cd test
 #
 for f in *.csv
 do
 	echo "Processing $f file"
-	Rscript subServer.R $f PXD001385 0 
+	Rscript subServer.R $f PXD004682
 done
 #	
 #
