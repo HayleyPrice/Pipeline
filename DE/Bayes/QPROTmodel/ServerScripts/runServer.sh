@@ -1,15 +1,21 @@
 # sets directory
 #cd Z:/hprice/Rbatch
 # runs R script to separate data into subsets
-Rscript QPROTmodel_dataSplit_Server.R PXD004682_QPROTin_test PXD004682 32
+echo '################### Processing QPROTmodel_dataSplit_Server.R'
+Rscript QPROTmodel_dataSplit_Server.R PXD004682_QPROTin_test PXD004682 100
 
 cd test
 #
 for f in *.csv
 do
-	echo "Processing $f file"
-	Rscript subServer.R $f PXD004682
+	echo '################### Processing file: ' $f
+	Rscript subServer.r $f PXD004682 &
 done
+
+wait
+
+echo '################### Complete'
+
 #	
 #
 #setlocal ENABLEDELAYEDEXPANSION

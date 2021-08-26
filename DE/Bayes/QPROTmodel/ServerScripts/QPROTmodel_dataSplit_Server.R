@@ -1,13 +1,16 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
+#setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/DE/Bayes/QPROTmodel/ServerScripts')
+#args <- c('PXD004682_QPROTin_testShort', 'PXD004682', '5')
+
 #test if there is at least one argument: if not, return an error
 if (length(args)==0) {
- stop("At least one argument must be supplied (input file).n", call.=FALSE)
+ stop('At least one argument must be supplied (input file).n', call.=FALSE)
 }
 dataSet <- args[2]
 
-model_input <- read.table(args[1], sep = "\t", header = TRUE)
+model_input <- read.table(args[1], sep = '\t', header = TRUE)
 model_input<- model_input[, 1:14]
 
 proteins <- nrow(model_input)
@@ -20,6 +23,7 @@ model_input[model_input == 0] <- 0.00001
 model_input[,2:7] <- log(model_input[2:7])
 
 setwd('/mnt/hc-storage/users/hprice/Rbatch/QPROTmodel/test')
+#setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/DE/Bayes/QPROTmodel/ServerScripts/test')
 for (i in 1:split) {
    
   firstLine <- (subs * (i-1)) + 1
@@ -28,7 +32,7 @@ for (i in 1:split) {
   #print(lastLine)
   dataSub <- model_input[firstLine:lastLine,]
   loop <- i
-  outFile <- paste("subset", loop, ".csv", sep = "")
+  outFile <- paste('subset', loop, '.csv', sep = '')
   write.csv(dataSub, outFile)
   
 }

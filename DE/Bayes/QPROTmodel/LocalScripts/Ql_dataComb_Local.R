@@ -1,4 +1,7 @@
 library(mclust)
+library(factoextra)
+library(MASS)
+library(ggplot2)
 #dataSet <- args[1]
 #comp <- args[2]
 
@@ -16,32 +19,22 @@ for (subset in subsets) {
   results <- rbind(results, data)
 }
 
-results$Zstatistic <- abs(results$Zstatistic)
-results <- results[order(-results$Zstatistic), ]
+zeds <- results[,c(2,17)]
 
-results$spike <- mapply(grepl, pattern = spike, x = results$Protein)
-results$background <- mapply(grepl, pattern = background, x = results$Protein)
-cols <- sapply(results, is.logical)
-results[,cols] <- lapply(results[,cols], as.numeric)
+dens <- densityMclust(zeds$Zstatistic)
+plot(dens, what = 'density' )
 
-results$spike <- mapply(grepl, pattern = spike, x = results$Protein)
-results$background <- mapply(grepl, pattern = background, x = results$Protein)
-cols <- sapply(results, is.logical)
-results[,cols] <- lapply(results[,cols], as.numeric)
-
-# Create running tally
-results$spikeTot <- cumsum(results$spike)
-results$bgTot <- cumsum(results$background)
-
-# Calculates FDR and sensitivity
-results$FDR <- (results$bgTot/(results$spikeTot + results$bgTot))
-totSpike1 <- sum(results$spike)
-totBG1 <- sum(results$bgTot)
-results$Sensitivity <- (results$spikeTot/totSpike1)
-results$Sensitivity[is.na(results$Sensitivity)] <- 0
-results$Qval <- 0
+mc <- Mclust(zeds$Zstatistic, G = 2)
+plot(mc, what = 'classification')
+summary(mc)
+fviz_mclust(mc, 'classification')
+mc$parameters
 
 #results <- results[,2:10]
-write.csv(results, file = outFile)
+#write.csv(results, file = outFile)
 
+qprot_result <- read.table('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/DE/Bayes/QPROTout_test', header = TRUE, sep = '\t')
+qprot_zeds <- qprot_result[,c(1, 16)]
 
+qprot_dens <- densityMclust(qprot_zeds$Zstatistic)
+plot(qprot_dens, what = 'density' )
