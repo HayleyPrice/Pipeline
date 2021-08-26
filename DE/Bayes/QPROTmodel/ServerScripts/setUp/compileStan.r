@@ -1,6 +1,6 @@
 library(rstan)
 rstan_options(auto_write = TRUE)
-sm <- stan_model(file = '/mnt/hc-storage/users/hprice/Rbatch/QPROTmodel/QPROTmodel.stan', 
+sm <- stan_model(file = '/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/QPROTmodel.stan', 
                  save_dso = TRUE)
 
 save('sm', file = 'QPROTmodel.RData')

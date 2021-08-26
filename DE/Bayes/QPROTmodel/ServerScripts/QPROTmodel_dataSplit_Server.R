@@ -37,4 +37,4 @@ for (i in 1:split) {
   
 }
 
-setwd('/mnt/hc-storage/users/hprice/Rbatch/QPROTmodel')
+setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel')

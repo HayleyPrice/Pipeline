@@ -1,6 +1,6 @@
 library(Rcpp)
 library(rstan)
-sm <-readRDS("/mnt/hc-storage/users/hprice/QPROTmodel/QPROTmodel.rds")
+sm <-readRDS("/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/QPROTmodel.rds")
 rstan_options(auto_write = TRUE)
 #options(mc.cores = parallel::detectCores())
 #args <- c('subset1.csv', 'PXD004682')
@@ -14,7 +14,7 @@ if (length(args)==0) {
 }
 
 start <- Sys.time()
-#setwd('/mnt/hc-storage/users/hprice/QPROTmodel/test')
+#setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test')
 
 ch = 4
 c = 1
@@ -65,7 +65,7 @@ for (protein in 1:numProteins) {
   #Runs stan model from file
   # fit <- stan(
   #   #Path to stan model script
-  #   file = '/mnt/hc-storage/users/hprice/QPROTmodel/QPROTmodel.stan',
+  #   file = '/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/QPROTmodel.stan',
   #   #file = 'E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/DE/Bayes/QPROTmodel/ServerScripts/QPROTmodel.stan',
   #   data = protData,
   #   chains = ch,                               #Number of MCMC chains to perform
@@ -97,7 +97,7 @@ for (protein in 1:numProteins) {
   QPROTmodel_output$LogFC[protein] <- d$summary[1]
   QPROTmodel_output$Zstatistic[protein] <- d$summary[1]/d$summary[3]
 }
-setwd('/mnt/hc-storage/users/hprice/QPROTmodel/test/out')
+setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test/out')
 write.csv(QPROTmodel_output, outFile)
 
 timeTaken <- Sys.time() - start
