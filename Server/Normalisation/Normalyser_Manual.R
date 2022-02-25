@@ -1,3 +1,14 @@
+# #!/usr/bin/env Rscript
+args = commandArgs(trailingOnly=TRUE)
+
+# test if there is at least one argument: if not, return an error
+if (length(args)==0) {
+  stop('At least one argument must be supplied (input file).n', call.=FALSE)
+}
+
+#setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server')
+#file <- 'PXD004682_raw_test.txt'
+#dataset <- 'PXD004684'
 ####### ***** Log2 transformed
 #library(NormalyzerDE)
 library(vsn)
@@ -5,18 +16,25 @@ library(preprocessCore)
 library(limma)
 library(MASS)
 
-cols <- c("Protein", "0", "0", "0", "0", "0", "0", "0","1", "1", "1","1", "1", "1")
-
-file <- "PXD004682_raw_test.txt"
-#jobdir<- paste(dataset, "/", up, sep = "")
+file <- args[1]
+dataset <- args[2]
+jobdir<- paste(dataSet, "/", sep = "")
 
 getrawdata <- as.matrix((read.table(file, header=F,sep="\t",stringsAsFactors=F,quote="")))
-getrawdata <- getrawdata[, c(-2,-3)]
+cols <- getrawdata[1,]
 
-# if(file.exists(jobdir)) {
-#   stop("Directory already exists")
-# }else{
-#   dir.create(jobdir)}
+if(file.exists(dataSet)) {
+  unlink(dataSet, recursive = TRUE)
+} 
+
+dir.create(dataSet)
+dir.create(paste(jobdir, "/Normalisation", sep = ""))
+dir.create(paste(jobdir, "/Ttest", sep = ""))
+dir.create(paste(jobdir, "/Ttest/PA", sep = ""))
+dir.create(paste(jobdir, "/Qmodel", sep = ""))
+dir.create(paste(jobdir, "/Qmodel/FDR", sep = ""))
+dir.create(paste(jobdir, "/Qmodel/FDR/PA", sep = ""))
+dir.create(paste(jobdir, "/Results", sep = ""))
 
 #Sort the uploaded data based on replicates
 b<-NULL
@@ -141,7 +159,7 @@ methodlist<-list(data2log,data2loess,globalfittedRLR,data2vsn,data2GI,data2med,d
 methodnames<-c("None", "Loess-G","RLR-G","VSN-G","TI-G","MedI-G","AI-G","Quantile")
 
 for(i in 1:length(methodlist)) {
-  write.table(file=paste(methodnames[i],"-normalized_Log2",sep=""),
+  write.table(file=paste(dataset, '_', methodnames[i],"-normalized_Log2",sep=""),
               cbind(getrawdata[-(1:2),(1:(length(getEDdata)-length(filterED)))],methodlist[[i]]),sep="\t",
               row.names=F,col.names=cols, quote = FALSE)
 }

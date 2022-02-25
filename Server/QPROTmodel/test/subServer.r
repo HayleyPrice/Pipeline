@@ -5,6 +5,8 @@ rstan_options(auto_write = TRUE)
 #options(mc.cores = parallel::detectCores())
 #args <- c('subset1.csv', 'PXD004682')
 
+#setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/QPROTmodel/test')
+# fileName <-'PXD004682_AI-G-normalized_Log2_subset1.csv'
 # #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
@@ -31,17 +33,23 @@ outFile <- paste('out_', fileName, sep = '')
 #sink(outFile, append=TRUE)
 #sink(ouputFile, append=TRUE, type='message')
 
-QPROTmodel_input <- read.table(fileName, sep = ',', header = TRUE)
+QPROTmodel_input <- read.table(fileName, sep = ',', header = FALSE)
+cols <- QPROTmodel_input[2,-1]
+colNum <- length(cols)
+colnames <- cols[,-1]
+#colnames <- as.vector(as.character(colnames))
 #print(paste('Processing file: ', fileName, sep = ''))
 #head(QPROTmodel_input)
-QPROTmodel_input <- QPROTmodel_input[, 2:15]
+QPROTmodel_input <- QPROTmodel_input[c(-1,-2), c(2:(colNum+1))]
+#colNum <- colNum -1
 QPROTmodel_input <- na.omit(QPROTmodel_input)
 
-indicator <- c(0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1)             #Describes experimental set up
+indicator <- as.numeric(colnames[1,]) - 1           #Describes experimental set up
 numProteins <- nrow(QPROTmodel_input)               #Number of proteins in dat-set
 numRuns <- length(indicator)                   #Total number of runs
 
 QPROTmodel_output <- QPROTmodel_input
+colnames(QPROTmodel_output) <- cols
 QPROTmodel_output$LogFC <- 1
 QPROTmodel_output$Zstatistic <- 1
 
@@ -53,7 +61,7 @@ for (protein in 1:numProteins) {
   
   p <- QPROTmodel_input[protein, 1]
   
-  intensities <- as.numeric(QPROTmodel_input[protein, c(2:14)])
+  intensities <- as.numeric(QPROTmodel_input[protein, c(2:colNum)])
   
   #Input data for Stan model
   protData <- list(
@@ -98,7 +106,7 @@ for (protein in 1:numProteins) {
   QPROTmodel_output$Zstatistic[protein] <- d$summary[1]/d$summary[3]
 }
 setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test/out')
-write.csv(QPROTmodel_output, outFile)
+write.csv(QPROTmodel_output, outFile, row.names = FALSE)
 
 timeTaken <- Sys.time() - start
 print(timeTaken)

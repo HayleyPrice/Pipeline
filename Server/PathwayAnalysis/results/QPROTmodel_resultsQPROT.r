@@ -11,7 +11,7 @@ colnames(results) <- headers
 #for (norm in norms) {
     
     #subsets <- list.files(pattern = norm, full.names = FALSE)
-    subsets <- list.files(pattern = 'None', full.names = FALSE)
+    subsets <- list.files(pattern = 'PAout_QPROT_test_QPROT', full.names = FALSE)
     
     for (subset in subsets) {
         
@@ -25,4 +25,4 @@ colnames(results) <- headers
     #bestResults <- rbind(bestResults, best)
 #}
 
-write.csv(results, 'ResultsSummary_Log2.csv')
+write.csv(results, 'ResultsSummary_QPROT_test_QPROT.csv')

@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
 library(clusterProfiler)
@@ -6,10 +7,9 @@ library(clusterProfiler)
 #library(stringr)
 library(tidyr)
 #library(organism, character.only = TRUE)
-library(tidyr)
 
 # SET THE DESIRED ORGANISM HERE
-organism = "org.Hs.eg.db"
+organism = "org.Hs.eg.db" 
 #BiocManager::install(organism, character.only = TRUE)
 library(organism, character.only = TRUE)
 
@@ -18,17 +18,38 @@ norm <-args[2]
 DE <- "QPROTmodel"
 #norm <- "RLR-G"
 
-fileIn <- paste(norm, "_DEresults.csv", sep = '')
-#fileOut <- paste ("PAout_", norm, sep = '')
-fileOut <- paste ("results/PAout_", norm, sep = '')
+fileIn <- paste(dataset, "_", norm, "_FDRresults.csv", sep = '')
+fileOut <- paste ("results/", dataset, "_PAout_", norm, sep = '')
 # Reads in file and removes top 2 lines
-qprot_out <- read.csv(fileIn, header = TRUE)
-qprot_out <- qprot_out[,c(3:20)]
+qprot_out <- read.csv(fileIn, header = FALSE)
+cols <- qprot_out[1,]
+qprot_out <- qprot_out[-1,]
+
+index1 <- grep("1", cols)
+ind1 <- length(index1)
+index2 <- grep("2", cols)
+ind2 <- length(index2)
+
+if(ind1 < ind2){
+  index <- ind2
+} else {
+  index <- ind1
+}
+
+s <- LETTERS[seq(1,index)]
+
+for (i1 in 1:ind1) {
+  j1 <- index1[i1]
+  cols[1,j1] <- paste(cols[1,j1], s[i1], sep = '')
+}
+for (i2 in 1:ind2) {
+  j2 <- index2[i2]
+  cols[1,j2] <- paste(cols[1,j2], s[i2], sep = '')
+}
 
 # Column names
-colnames(qprot_out) <- c("Protein", "N1", "N2", "N3", "N4", "N5", "N6", "N7", 
-                         "T1", "T2", "T3", "T4", "T5", "T6", "LogFoldChange", 
-                         "Zstatistic", "pVal", "BHpVal")
+colnames(qprot_out) <- cols
+qprot_out <- qprot_out[order(qprot_out$QM_fdr), ]
 
 thresholds <- c(0.000001, 0.000002, 0.000003, 0.000004, 0.000005, 0.000006, 0.000007, 0.000008, 0.000009,
                 0.00001, 0.00002, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.00008, 0.00009,
@@ -55,9 +76,9 @@ for (fdrThresh in thresholds) {
   results <- NULL
   
   # Create list of DE proteins and all proteins
-  DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$BHpVal < fdrThresh))
+  DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, as.numeric(protAcc$QM_fdr) < fdrThresh))
   DE <- length(DE_prots)
-  NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$BHpVal >= fdrThresh))
+  NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, as.numeric(protAcc$QM_fdr) >= fdrThresh))
   nonDE <- length(NonDE_prots)
   
   if (DE > 0) {

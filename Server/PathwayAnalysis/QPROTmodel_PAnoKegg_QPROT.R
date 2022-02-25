@@ -6,7 +6,7 @@ library(clusterProfiler)
 #library(stringr)
 library(tidyr)
 #library(organism, character.only = TRUE)
-library(tidyr)
+#library(tidyr)
 
 # SET THE DESIRED ORGANISM HERE
 organism = "org.Hs.eg.db"
@@ -19,27 +19,27 @@ fdrThresh <-args[2]
 #fileIn <- 'PXD004682_QPROTout_QPROTNorm_1up'
 #norm <- "QPROT"
 #fileIn <- 'PXD004682_QPROTout_NoNorm_1up'
-#norm <- "noNorm"
-fileIn <- 'None_DEresults.csv'
-norm <- "Log2"
+norm <- "noNorm"
+fileIn <- 'QPROT_test'
+#norm <- "Log2"
 #fileOut <- paste ("PAout_", fileIn, '_', fdrThresh, sep = '')
-fileOut <- paste ("results/PAout_", fileIn, '_', fdrThresh, sep = '')
+fileOut <- paste ("results/PAout_", fileIn, '_QPROT_', fdrThresh, sep = '')
 # Reads in file and removes top 2 lines
-#qprot_out <- read.table(fileIn, header = TRUE, sep = '\t')
-#qprot_out <- qprot_out[,c(1:17)]
-qprot_out <- read.csv(fileIn, header = TRUE)
-qprot_out <- qprot_out[,c(3:20)]
+qprot_out <- read.table(fileIn, header = TRUE, sep = '\t')
+qprot_out <- qprot_out[,c(1:17)]
+#qprot_out <- read.table(paste(fileIn, '.csv', sep =''), header = TRUE)
+#qprot_out <- qprot_out[,c(2:18)]
 
 # Column names
 colnames(qprot_out) <- c("Protein", "N1", "N2", "N3", "N4", "N5", "N6", "N7", 
                          "T1", "T2", "T3", "T4", "T5", "T6", "LogFoldChange", 
-                         "Zstatistic", "pVal", "BHpVal")
+                         "Zstatistic", "fdr")
 # Column names
 #colnames(qprot_out) <- c("Protein", "N1", "N2", "N3", "N4", "N5", "N6", "N7", 
 #                         "T1", "T2", "T3", "T4", "T5", "T6", "LogFoldChange", 
 #                         "Zstatistic", "pVal", "BHpVal")
 
-#qprot_out <- qprot_out[order(-abs(qprot_out$Zstatistic)), ]
+qprot_out <- qprot_out[order(qprot_out$fdr), ]
 #qprot_out$pVal <- 2*pnorm(-abs(qprot_out$Zstatistic))
 #qprot_out$BHpVal <- p.adjust(qprot_out$pVal, method = "BH", n = length(qprot_out$pVal))
 
@@ -62,9 +62,9 @@ colnames(thresholdResults) <- headers
   results <- NULL
   
   # Create list of DE proteins and all proteins
-  DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$BHpVal < fdrThresh))
+  DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$fdr < fdrThresh))
   DE <- length(DE_prots)
-  NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$BHpVal >= fdrThresh))
+  NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$fdr >= fdrThresh))
   nonDE <- length(NonDE_prots)
   
   if (DE > 0) {

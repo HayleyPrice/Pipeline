@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
 library(clusterProfiler)
@@ -6,32 +7,54 @@ library(clusterProfiler)
 #library(stringr)
 library(tidyr)
 #library(organism, character.only = TRUE)
-library(tidyr)
+#library(tidyr)
 
 # SET THE DESIRED ORGANISM HERE
 organism = "org.Hs.eg.db"
 #BiocManager::install(organism, character.only = TRUE)
 library(organism, character.only = TRUE)
 
-#setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/PathwayAnalysis')
-norm <-args[2]
+#setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/PathwayAnalysis/T')
+norm <-args[1]
+dataSet <- args[2]
 DE <- "t-Test"
 #norm <- "RLR-G"
 
-fileIn <- paste(norm, "-normalized_Log2_Tresults.csv", sep = '')
+fileIn <- paste(dataSet, "_", norm, "-normalized_Log2_Tresults.csv", sep = '')
 #fileOut <- paste ("PAout_", norm, sep = '')
-fileOut <- paste ("results/T_PAout_", norm, sep = '')
+fileOut <- paste ("results/", dataSet ,"_T_PAout_", norm, sep = '')
 # Reads in file and removes top 2 lines
-Tresults <- read.csv(fileIn, header = TRUE)
-Tresults <- Tresults[,c(2:16 )]
+Tresults <- read.csv(fileIn, header =FALSE)
+Tresults <- Tresults[,-1]
+cols <- as.vector(Tresults[1,])
+cols[1] <- 'Protein'
+Tresults <- Tresults[-1,]
 
-## calculate adj p values
-Tresults <- Tresults[order(-(Tresults$pVal)), ]
-Tresults$BHpVal <- p.adjust(Tresults$pVal, method = "BH", n = length(Tresults$pVal))
+index1 <- grep("1", cols)
+ind1 <- length(index1)
+index2 <- grep("2", cols)
+ind2 <- length(index2)
+
+if(ind1 < ind2){
+  index <- ind2
+} else {
+  index <- ind1
+}
+
+s <- LETTERS[seq(1,index)]
+
+for (i1 in 1:ind1) {
+  j1 <- index1[i1]
+  cols[j1] <- paste(cols[j1], s[i1], sep = '')
+}
+for (i2 in 1:ind2) {
+  j2 <- index2[i2]
+  cols[j2] <- paste(cols[j2], s[i2], sep = '')
+}
 
 # Column names
-colnames(Tresults) <- c("Protein", "N1", "N2", "N3", "N4", "N5", "N6", "N7", 
-                         "T1", "T2", "T3", "T4", "T5", "T6", "pVal", "BHpVal")
+colnames(Tresults) <- cols
+Tresults <- as.data.frame(Tresults)
 
 thresholds <- c(0.000001, 0.000002, 0.000003, 0.000004, 0.000005, 0.000006, 0.000007, 0.000008, 0.000009,
                 0.00001, 0.00002, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.00008, 0.00009,
@@ -58,9 +81,9 @@ for (fdrThresh in thresholds) {
   results <- NULL
   
   # Create list of DE proteins and all proteins
-  DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$BHpVal < fdrThresh))
+  DE_prots <- as.vector(subset(protAcc$Uniprot_Acc, as.numeric(protAcc$BHpVal) < fdrThresh))
   DE <- length(DE_prots)
-  NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, protAcc$BHpVal >= fdrThresh))
+  NonDE_prots <- as.vector(subset(protAcc$Uniprot_Acc, as.numeric(protAcc$BHpVal) >= fdrThresh))
   nonDE <- length(NonDE_prots)
   
   if (DE > 0) {

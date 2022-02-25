@@ -8,13 +8,17 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)==0) {
  stop('At least one argument must be supplied (input file).n', call.=FALSE)
 }
+norm <- args[1]
 dataSet <- args[2]
 
-fileIn <- args[1]
+fileIn <- paste(dataset, "_" , norm, "-normalized_Log2", sep = "")
 #fileOut <- paste(subset) 
-
-model_input <- read.table(fileIn, sep = '\t', header = TRUE)
-model_input<- model_input[, 1:14]
+#setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/Normalisation')
+#fileIn <- 'PXD004682_AI-G-normalized_Log2'
+model_input <- read.table(fileIn, sep = '\t', header = FALSE)
+cols <- model_input[1,]
+colNum <- length(cols)
+model_input<- model_input[-1, 1:colNum]
 
 proteins <- nrow(model_input)
 split <- as.numeric(args[3])
@@ -27,6 +31,13 @@ model_input[model_input == 0] <- 0.00001
 
 setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test')
 #setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/QPROTmodel/test')
+jobdir <- paste(dataset, "_subs", sep = "")
+if(file.exists(jobdir)) {
+   unlink(paste(jobdir, "/*", sep = ""))
+}else{
+   dir.create(jobdir)}
+setwd(paste('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test/', jobdir, sep = ""))
+
 for (i in 1:split) {
  
   firstLine <- (subs * (i-1)) + 1
@@ -36,6 +47,7 @@ for (i in 1:split) {
   dataSub <- model_input[firstLine:lastLine,]
   loop <- i
   outFile <- paste(fileIn, '_subset', loop, '.csv', sep = '')
+  dataSub <- rbind(cols,dataSub)
   write.csv(dataSub, outFile)
   
 }
