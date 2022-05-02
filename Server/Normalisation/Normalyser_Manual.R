@@ -28,13 +28,16 @@ if(file.exists(dataSet)) {
 } 
 
 dir.create(dataSet)
-dir.create(paste(jobdir, "/Normalisation", sep = ""))
-dir.create(paste(jobdir, "/Ttest", sep = ""))
-dir.create(paste(jobdir, "/Ttest/PA", sep = ""))
-dir.create(paste(jobdir, "/Qmodel", sep = ""))
-dir.create(paste(jobdir, "/Qmodel/FDR", sep = ""))
-dir.create(paste(jobdir, "/Qmodel/FDR/PA", sep = ""))
-dir.create(paste(jobdir, "/Results", sep = ""))
+dirs <- c("/NormalisedData", 
+          "/Ttest", "/Ttest/Results", "/Ttest/PA", 
+          "/Qmodel", "/Qmodel/subs", "/Qmodel/Results", "/Qmodel/FDR", "/Qmodel/PA", 
+          "/Summary")
+
+for(dir in dirs) {
+  dir.create(paste(jobdir, dir, sep = ""))
+}
+
+setwd(paste('/mnt/hc-storage/users/hprice/Pipeline/', dataset, "/NormalisedData", sep = ""))
 
 #Sort the uploaded data based on replicates
 b<-NULL

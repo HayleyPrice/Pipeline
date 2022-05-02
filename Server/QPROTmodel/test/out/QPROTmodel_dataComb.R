@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
-dataset <- args[1]
+dataSet <- args[1]
+setwd(paste('/mnt/hc-storage/users/hprice/Pipeline/', dataSet, '/Qmodel/subs', sep = ""))
 
 #setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/QPROTmodel/test/out')
 norms <- c("None", "Loess-G","RLR-G","VSN-G","TI-G","MedI-G","AI-G","Quantile")
@@ -9,7 +10,6 @@ norms <- c("None", "Loess-G","RLR-G","VSN-G","TI-G","MedI-G","AI-G","Quantile")
 for (norm in norms) {
     
     ##Combine subsets
-    setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test/out')
     subsets <- list.files(pattern = norm, full.names = FALSE)
     
     results <- NULL
@@ -30,7 +30,7 @@ for (norm in norms) {
     #results$BHpVal <- p.adjust(results$pVal, method = "BH", n = length(results$pVal))
     
     ## print combined reults file for PA analysis
-    setwd('/mnt/hc-storage/users/hprice/Pipeline/FDR')
+    setwd(paste('/mnt/hc-storage/users/hprice/Pipeline/', dataSet, '/Qmodel/Results', sep = ""))
     fileOut <- paste(dataset, "_", norm, "_DEresults.csv", sep = '')
     write.csv(results, fileOut, row.names = FALSE)
 }

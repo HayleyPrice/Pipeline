@@ -1,5 +1,4 @@
-# sets directory
-#cd Z:/hprice/Rbatch
+#!/usr/bin/env bash
 
 # # Performs normalisation of raw data
 # echo '################### Normalising data'
@@ -28,8 +27,17 @@
 # echo '################### Combing output'
 # Rscript QPROTmodel_dataComb.R
 
+# # # FDRs calculated
+# #norms=(None Loess-G RLR-G VSN-G TI-G MedI-G AI-G Quantile )
+# #for n in ${norms[@]};
+# do
+	# echo '################### Calculating FDR: ' $n
+	# Rscript QPROTtest_FDR.R $1 $2 &
+# done
+# wait
+
 # runs R script to separate each of the normalisaed data into subsets
-cd /mnt/hc-storage/users/hprice/Pipeline/PathwayAnalysis
+#cd /mnt/hc-storage/users/hprice/Pipeline/PathwayAnalysis
 thresholds=(0.000001 0.000002 0.000003 0.000004 0.000005 0.000006 0.000007 0.000008 0.000009 \
 0.00001 0.00002 0.00003 0.00004 0.00005 0.00006 0.00007 0.00008 0.00009 \
 0.0001 0.0002 0.0003 0.0004 0.0005 0.0006 0.0007 0.0008 0.0009 \
@@ -39,15 +47,15 @@ thresholds=(0.000001 0.000002 0.000003 0.000004 0.000005 0.000006 0.000007 0.000
 for t in ${thresholds[@]};
 do
 	echo '################### Processing normalisation: ' $t
-	Rscript QPROTmodel_PAnoKegg_QPROT.R PXD004682 $t &
+	Rscript QPROTtest_PAnoKegg.R $1 $2 $t &
 done
 wait
 
-# Evaluates the best  result
-#echo '################### Analysing results'
-cd results
-Rscript QPROTmodel_resultsQPROT.r PXD004682
+# # Evaluates the best  result
+# #echo '################### Analysing results'
+# #cd $2
+# Rscript QPROTmodel_resultsQPROT.r $2
 
-echo '################### Complete'
+# echo '################### Complete'_QPROT
 
 #srun -c 40 --pty bash

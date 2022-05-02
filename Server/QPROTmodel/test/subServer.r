@@ -1,22 +1,13 @@
+#!/usr/bin/env Rscript
+
 library(Rcpp)
 library(rstan)
-sm <-readRDS("/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/QPROTmodel.rds")
+sm <-readRDS("/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel.rds")
 rstan_options(auto_write = TRUE)
 #options(mc.cores = parallel::detectCores())
-#args <- c('subset1.csv', 'PXD004682')
-
 #setwd('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/QPROTmodel/test')
-# fileName <-'PXD004682_AI-G-normalized_Log2_subset1.csv'
-# #!/usr/bin/env Rscript
+
 args = commandArgs(trailingOnly=TRUE)
-
-# test if there is at least one argument: if not, return an error
-if (length(args)==0) {
-  stop('At least one argument must be supplied (input file).n', call.=FALSE)
-}
-
-start <- Sys.time()
-#setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test')
 
 ch = 4
 c = 1
@@ -26,12 +17,8 @@ wu = loc_input/2
 AD = 0.9
 
 fileName <- args[1]
-#fileName <- 'subset1'
-#fileIn <- paste(fileName, '.csv', sep = '')
+dataSet <- args[2]
 outFile <- paste('out_', fileName, sep = '')
-
-#sink(outFile, append=TRUE)
-#sink(ouputFile, append=TRUE, type='message')
 
 QPROTmodel_input <- read.table(fileName, sep = ',', header = FALSE)
 cols <- QPROTmodel_input[2,-1]
@@ -105,14 +92,8 @@ for (protein in 1:numProteins) {
   QPROTmodel_output$LogFC[protein] <- d$summary[1]
   QPROTmodel_output$Zstatistic[protein] <- d$summary[1]/d$summary[3]
 }
-setwd('/mnt/hc-storage/users/hprice/Pipeline/QPROTmodel/test/out')
+setwd(paste('/mnt/hc-storage/users/hprice/Pipeline/', dataSet, '/Qmodel/Results', sep = ""))
 write.csv(QPROTmodel_output, outFile, row.names = FALSE)
 
-timeTaken <- Sys.time() - start
-print(timeTaken)
-
-# Restore output to console
-sink() 
-sink(type='message')
 
 
