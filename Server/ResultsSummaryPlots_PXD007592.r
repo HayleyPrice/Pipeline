@@ -9,6 +9,7 @@ library(ggplot2)
 suppressPackageStartupMessages(library(tidyr))
 library(ggh4x)
 library(wesanderson)
+library(dplyr)
 #library(organism, character.only = TRUE)
 
 # SET THE DESIRED ORGANISM HERE
@@ -54,9 +55,10 @@ for (norm in norms) {
     results <- rbind(results, data)
 }
 
+
+results <- results[order(-results$DEs), ]
+results <- results[-c(1,2), ]
 results <- results[order(-results$Total), ]
-#results <- results[order(-results$DEs), ]
-#results <- results[-c(1,2), ]
 
 #setwd(paste('/mnt/hc-storage/users/hprice/Pipeline/', dataSet, '/Summary', sep = ""))
 #write.csv(results, paste(dataSet, '_ResultsSummary.csv', sep = ''))
@@ -90,7 +92,7 @@ p1 <- p1 +  scale_colour_manual(values=c("darkorange3", "cadetblue"),
                                 labels = c("BayT", "t-Test"))
 setwd(paste('E:/OneDrive/PhD/Project/Thesis/4_Pipeline/Pipeline/Server/', dataSet, '/Summary', sep = ""))
 
-png("TermsPlot.png", height = 750, width = 1400)
+png("TermsPlot.png", height = 500, width = 1400)
 print(p1)
 dev.off()
 
@@ -139,9 +141,7 @@ if (DE > 0) {
                                 by = "p.adjust",
                                 select_fun = min)
         GOBP <- data.frame(GO_BPsimply)
-        png("GO.png")
-        print(barplot(GO_BPsimply))
-        dev.off()
+        BP <- barplot(GO_BPsimply)
     } 
     GO_MFresult <- enrichGO(gene = search_prots, 
                             OrgDb = organism, 
@@ -157,9 +157,7 @@ if (DE > 0) {
                                 select_fun = min)
         GOMF <- data.frame(GO_MFsimply)
     } 
-    png("MF.png")
-    print(barplot(GO_MFsimply))
-    dev.off()
+    MF <- barplot(GO_MFsimply)
     
     GO_CCresult <- enrichGO(gene = search_prots, 
                             OrgDb = organism, 
@@ -175,11 +173,31 @@ if (DE > 0) {
                                 select_fun = min)
         GOCC <- data.frame(GO_CCsimply)
     }
-    png("CC.png")
-    print(barplot(GO_CCsimply))
+    CC <- barplot(GO_CCsimply)
+    png("All.png", width = 1400, height = 400)
+    ggarrange(BP, MF, CC, 
+              labels = c("a.)", "b.)", "c.)"),
+              ncol = 3, nrow = 1)
     dev.off()
     
     totGO <- rbind(GOBP, GOMF, GOCC)
     
 } 
 write.csv(totGO, file = paste(dataSet, '_PA.csv', sep = ""))
+
+DEstats <- subset(protAcc, as.numeric(protAcc$QM_fdr) < bestThresh)
+DEstats <- DEstats[,c(2,36)]
+
+DEstats <- DEstats %>% mutate(Group = 
+               case_when(LogFC < 0 ~ "Down",
+                         LogFC > 0 ~ "Up")
+           )
+
+#FC <- compareCluster(DEstats$Uniprot_Acc ~ DEstats$Group, data = DEstats, 
+#                     OrgDb = organism, fun = 'enrichGO', 
+#                     pvalueCutoff=1, pAdjustMethod = 'none',
+#                     readable=T, ont = "BP", minGSSize = 1)
+
+
+
+
