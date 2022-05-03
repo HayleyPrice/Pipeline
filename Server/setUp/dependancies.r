@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 options("repos" = c(CRAN = "http://cran.ma.imperial.ac.uk/"))
 
 install.packages(c("XML",
@@ -22,6 +24,3 @@ install.packages('tidyr', repos = 'http://cloud.r-project.org/')
 remove.packages('jpeg')
 install.packages('jpeg', repos = 'http://cloud.r-project.org/')
 library(jpeg)
-
-BiocManager::install("NormalyzerDE", force = TRUE)
-library(NormalyzerDE)

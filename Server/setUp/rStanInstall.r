@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # remove.packages("rstan")
 # if (file.exists(".RData")) file.remove(".RData")
 
